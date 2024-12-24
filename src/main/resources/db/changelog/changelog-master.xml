@@ -9,5 +9,5 @@
     <include file="db/changelog/users-changelog.xml"/>
     <include file="db/changelog/vehicles-changelog.xml"/>
     <include file="db/changelog/reservations-changelog.xml"/>
-    <include file="db/changelog/add-column.xml"/>
+<!--    <include file="db/changelog/add-column.xml"/>-->
 </databaseChangeLog>

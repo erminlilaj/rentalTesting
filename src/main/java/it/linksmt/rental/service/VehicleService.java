@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface VehicleService {
-    VehicleEntity createVehicle(CreateVehicleRequest createVehicleRequest, MultipartFile image);
+    VehicleEntity createVehicle(CreateVehicleRequest createVehicleRequest);
 
     List<VehicleEntity> findAllVehicle();
 
@@ -23,5 +23,5 @@ public interface VehicleService {
 
     double getVehiclePrice(Long id);
 
-    Resource getVehicleImage(String imagePath)throws IOException;;
+
 }

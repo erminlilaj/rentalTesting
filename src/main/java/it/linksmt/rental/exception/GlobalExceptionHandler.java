@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
 
     private HttpStatus getHttpStatusForErrorCode(ErrorCode errorCode) {
         return switch (errorCode.getCode()) {
-            case 101 -> HttpStatus.UNAUTHORIZED;     // INVALID_CREDENTIALS
+            case 101,203 -> HttpStatus.UNAUTHORIZED;     // INVALID_CREDENTIALS
             case 102 -> HttpStatus.UNAUTHORIZED;     // INVALID_TOKEN
             case 103 -> HttpStatus.FORBIDDEN;        // UNAUTHORIZED_ACCESS
 
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
             case 301 -> HttpStatus.NOT_FOUND;        // VEHICLE_NOT_FOUND
             case 302 -> HttpStatus.CONFLICT;         // VEHICLE_NOT_AVAILABLE
 
-            case 401, 402 -> HttpStatus.BAD_REQUEST; // VALIDATION_ERROR, BAD_REQUEST
+            case 401, 402,303,502 -> HttpStatus.BAD_REQUEST; // VALIDATION_ERROR, BAD_REQUEST
 
             case 501 -> HttpStatus.INTERNAL_SERVER_ERROR; // INTERNAL_SERVER_ERROR
 

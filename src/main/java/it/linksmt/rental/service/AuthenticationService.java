@@ -45,7 +45,10 @@ public class AuthenticationService {
                     "User already exists with email: " + registerUserRequest.getEmail()
             );
         }
-
+if(registerUserRequest.getAge()<18){
+    throw new ServiceException(ErrorCode.USER_NOT_ELIGIBLE,
+            "Age must be at least 18");
+}
         try {
             UserEntity user = new UserEntity();
             user.setUsername(registerUserRequest.getUsername());

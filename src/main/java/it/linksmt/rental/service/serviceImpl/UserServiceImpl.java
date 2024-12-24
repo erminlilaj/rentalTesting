@@ -3,6 +3,8 @@ package it.linksmt.rental.service.serviceImpl;
 import it.linksmt.rental.dto.CreateUserRequest;
 import it.linksmt.rental.dto.UpdateUserRequest;
 import it.linksmt.rental.entity.UserEntity;
+import it.linksmt.rental.enums.ErrorCode;
+import it.linksmt.rental.exception.ServiceException;
 import it.linksmt.rental.repository.UserRepository;
 import it.linksmt.rental.security.SecurityBean;
 import it.linksmt.rental.security.SecurityContext;
@@ -28,6 +30,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity createUser(CreateUserRequest createUserRequest) {
+        if(createUserRequest.getAge()<18){
+            throw new ServiceException(ErrorCode.USER_NOT_ELIGIBLE,
+                    "Age must be at least 18");
+        }
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(createUserRequest.getUsername());
         userEntity.setName(createUserRequest.getName());

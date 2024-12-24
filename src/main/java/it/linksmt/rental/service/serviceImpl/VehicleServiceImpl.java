@@ -42,6 +42,10 @@ public class VehicleServiceImpl implements VehicleService {
                             "You do not have access to create a vehicle"
                     );
         }
+        if(createVehicleRequest.getYear()<1980){
+            throw new ServiceException(ErrorCode.BAD_VEHICLE_DETAILS,
+                    "The year must be newer than 1980");
+        }
         try {
             VehicleEntity vehicleEntity = new VehicleEntity();
             vehicleEntity.setBrand(createVehicleRequest.getBrand());

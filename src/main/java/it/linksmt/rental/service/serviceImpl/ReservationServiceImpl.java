@@ -47,7 +47,9 @@ public class ReservationServiceImpl implements ReservationService {
         if (!checkAvailability(reservationRequest)) {
             throw new ServiceException(ErrorCode.VEHICLE_NOT_AVAILABLE, "Vehicle is not available for the selected dates");
         }
-
+        if(reservationRequest.getStartDate().isBefore(LocalDateTime.now())) {
+            throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "Start date cannot be before end date");
+        }
         ReservationEntity savedReservation = saveReservationDetails(reservationRequest, requestedVehicle, currentUserId);
         return convertReservationToResponse(savedReservation);
     }

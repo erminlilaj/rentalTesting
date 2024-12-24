@@ -129,6 +129,9 @@ public VehicleEntity getVehicleById(Long id) {
        try{
            //perform soft delete
         VehicleEntity deletedVehicle=vehicleRepository.findById(id).orElse(null);
+           if (deletedVehicle == null) {
+               throw new ServiceException(ErrorCode.VEHICLE_NOT_FOUND, "Vehicle not found for deletion with id: " + id);
+           }
         deletedVehicle.setDeletedAt(LocalDateTime.now());
 //if(vehicleBusinessLayer.activateOrFutureReservationOfVehicle(id)!=null){
 //    vehicleBusinessLayer.deleteVehicle(id);

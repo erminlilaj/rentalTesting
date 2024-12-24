@@ -11,7 +11,6 @@ import it.linksmt.rental.enums.VehicleStatus;
 import it.linksmt.rental.exception.ServiceException;
 import it.linksmt.rental.repository.ReservationRepository;
 import it.linksmt.rental.repository.UserRepository;
-import it.linksmt.rental.repository.VehicleRepository;
 import it.linksmt.rental.repository.projections.ReservationStatisticsProjection;
 import it.linksmt.rental.service.AuthenticationService;
 import it.linksmt.rental.service.ReservationService;
@@ -27,17 +26,15 @@ import java.util.stream.Collectors;
 public class ReservationServiceImpl implements ReservationService {
     private final VehicleServiceImpl vehicleServiceImpl;
     private final UserServiceImpl userServiceImpl;
-    private ReservationRepository reservationRepository;
-    private AuthenticationService authenticationService;
-    private VehicleRepository vehicleRepository;
-    private UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
+    private final AuthenticationService authenticationService;
+
 
     public ReservationServiceImpl(ReservationRepository reservationRepository, AuthenticationService authenticationService,
-                                  VehicleRepository vehicleRepository, UserRepository userRepository, VehicleServiceImpl vehicleServiceImpl, UserServiceImpl userServiceImpl) {
+                                   VehicleServiceImpl vehicleServiceImpl, UserServiceImpl userServiceImpl) {
         this.reservationRepository = reservationRepository;
         this.authenticationService = authenticationService;
-        this.vehicleRepository=vehicleRepository;
-        this.userRepository=userRepository;
+
         this.vehicleServiceImpl = vehicleServiceImpl;
         this.userServiceImpl = userServiceImpl;
     }
@@ -130,7 +127,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<ReservationResponse> findAllReservations() {
         List<ReservationEntity> reservationsList=reservationRepository.findAll();
-        if(reservationsList==null){
+        if(reservationsList.isEmpty()){
             throw new ServiceException(
                     ErrorCode.RESERVATION_NOT_FOUND,
                     "There is no reservations"
@@ -141,7 +138,7 @@ public class ReservationServiceImpl implements ReservationService {
     public List<ReservationResponse> convertReservationListToResponse(List<ReservationEntity> reservationList) {
         return reservationList.stream()
                 .map(reservationEntity -> convertReservationToResponse(reservationEntity))
-                .collect(Collectors.toUnmodifiableList());
+                .collect(Collectors.toList());
     }
 
 
@@ -193,9 +190,8 @@ public class ReservationServiceImpl implements ReservationService {
     public List<ReservationResponse> listOfActiveOrFutureReservations(Long vehicleId) {
         LocalDateTime currentTime = LocalDateTime.now();
         List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId, currentTime);
-        List<ReservationResponse> reservationResponseList = convertReservationListToResponse(vehiclesReservations);
 
-        return reservationResponseList;
+        return convertReservationListToResponse(vehiclesReservations);
     }
 
 
@@ -205,11 +201,9 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.isReservationOngoingOrCompleted(id,currentTime);
     }
     public boolean isReservationCancelled(Long reservationId) {
-        ReservationEntity reservation=reservationRepository.findById(reservationId).get();
-        if(reservation.getStatus().equals(ReservationStatus.CANCELLED)) {
-            return true;
-        }
-        return false;
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "Reservation not found"));
+        return reservation.getStatus().equals(ReservationStatus.CANCELLED);
 
     }
 

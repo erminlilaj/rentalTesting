@@ -1,6 +1,6 @@
 package it.linksmt.rental.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+
 import it.linksmt.rental.enums.UserType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

@@ -12,6 +12,7 @@ import it.linksmt.rental.service.AuthenticationService;
 import it.linksmt.rental.service.VehicleService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,9 +37,11 @@ public class VehicleServiceImpl implements VehicleService {
                     ErrorCode.UNAUTHORIZED_ACCESS,
                     "You do not have access to create a vehicle");
         }
-        if (createVehicleRequest.getYear() < 1980) {
-            throw new ServiceException(ErrorCode.BAD_VEHICLE_DETAILS,
-                    "The year must be newer than 1980");
+        int currentYear = LocalDate.now().getYear();
+        if (createVehicleRequest.getYear() < 1980 || createVehicleRequest.getYear() > currentYear) {
+            throw new ServiceException(
+                    ErrorCode.BAD_VEHICLE_DETAILS,
+                    "The year must be between 1980 and " + currentYear);
         }
         try {
             VehicleEntity vehicleEntity = new VehicleEntity();

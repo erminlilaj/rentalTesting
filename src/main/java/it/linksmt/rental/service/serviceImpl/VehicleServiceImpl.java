@@ -21,28 +21,22 @@ public class VehicleServiceImpl implements VehicleService {
     VehicleRepository vehicleRepository;
     public AuthenticationService authenticationService;
 
-
-
     public VehicleServiceImpl(VehicleRepository vehicleRepository, AuthenticationService authenticationService) {
         this.vehicleRepository = vehicleRepository;
         this.authenticationService = authenticationService;
-
-        //this.vehicleBusinessLayer = vehicleBusinessLayer;
 
     }
 
     @Override
     public VehicleEntity createVehicle(CreateVehicleRequest createVehicleRequest) {
-        //SecurityBean currentUser = SecurityContext.get();
 
         if (!authenticationService.isAdmin()) {
-            //throw new AccessDeniedException(
+
             throw new ServiceException(
                     ErrorCode.UNAUTHORIZED_ACCESS,
-                            "You do not have access to create a vehicle"
-                    );
+                    "You do not have access to create a vehicle");
         }
-        if(createVehicleRequest.getYear()<1980){
+        if (createVehicleRequest.getYear() < 1980) {
             throw new ServiceException(ErrorCode.BAD_VEHICLE_DETAILS,
                     "The year must be newer than 1980");
         }
@@ -58,48 +52,43 @@ public class VehicleServiceImpl implements VehicleService {
             vehicleEntity.setDailyFee(createVehicleRequest.getDailyFee());
 
             return vehicleRepository.save(vehicleEntity);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ServiceException(
-            ErrorCode.INTERNAL_SERVER_ERROR,
-            "Error occured while creating the vehicle"
-            );
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    "Error occured while creating the vehicle");
         }
     }
 
     @Override
     public List<VehicleEntity> findAllVehicle() {
-        if(vehicleRepository.findAll().isEmpty()) {
+        if (vehicleRepository.findAll().isEmpty()) {
             throw new ServiceException(
                     ErrorCode.VEHICLE_NOT_FOUND,
-                    "No vehicle found"
-            );
+                    "No vehicle found");
         }
         try {
 
             return vehicleRepository.findCurrentVehicles();
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new ServiceException(
                     ErrorCode.INTERNAL_SERVER_ERROR,
-                    "Error occured while finding all vehicles"
-            );
+                    "Error occured while finding all vehicles");
         }
     }
 
     @Override
     public VehicleResponse findVehicleById(Long id) {
 
-
-            VehicleEntity vehicleEntity= vehicleRepository.findById(id).orElseThrow(()->new ServiceException(
-                    ErrorCode.VEHICLE_NOT_FOUND
-            ));
-return convertVehicleToResponse(vehicleEntity);
+        VehicleEntity vehicleEntity = vehicleRepository.findById(id).orElseThrow(() -> new ServiceException(
+                ErrorCode.VEHICLE_NOT_FOUND));
+        return convertVehicleToResponse(vehicleEntity);
     }
-public VehicleEntity getVehicleById(Long id) {
-        return vehicleRepository.findById(id).orElseThrow(()->new ServiceException(
-                ErrorCode.VEHICLE_NOT_FOUND
-        ));
-}
+
+    public VehicleEntity getVehicleById(Long id) {
+        return vehicleRepository.findById(id).orElseThrow(() -> new ServiceException(
+                ErrorCode.VEHICLE_NOT_FOUND));
+    }
+
     private VehicleResponse convertVehicleToResponse(VehicleEntity vehicleEntity) {
         VehicleResponse vehicleResponse = new VehicleResponse();
         vehicleResponse.setId(vehicleEntity.getId());
@@ -116,59 +105,54 @@ public VehicleEntity getVehicleById(Long id) {
 
     @Override
     public boolean deleteVehicle(Long id) {
-       // SecurityBean currentUser = SecurityContext.get();
+        // SecurityBean currentUser = SecurityContext.get();
 
         if (!authenticationService.isAdmin()) {
             throw new ServiceException(
                     ErrorCode.UNAUTHORIZED_ACCESS,
-                    "You do not have access to delete a vehicle"
-            );
+                    "You do not have access to delete a vehicle");
         }
-       if(!vehicleRepository.existsById(id)) {
-           throw new ServiceException(
-                   ErrorCode.VEHICLE_NOT_FOUND,
-                   "No vehicle found with id: " + id
-           );
-       }
-       try{
-           //perform soft delete
-        VehicleEntity deletedVehicle=vehicleRepository.findById(id).orElse(null);
-           if (deletedVehicle == null) {
-               throw new ServiceException(ErrorCode.VEHICLE_NOT_FOUND, "Vehicle not found for deletion with id: " + id);
-           }
-        deletedVehicle.setDeletedAt(LocalDateTime.now());
-//if(vehicleBusinessLayer.activateOrFutureReservationOfVehicle(id)!=null){
-//    vehicleBusinessLayer.deleteVehicle(id);
-//}
+        if (!vehicleRepository.existsById(id)) {
+            throw new ServiceException(
+                    ErrorCode.VEHICLE_NOT_FOUND,
+                    "No vehicle found with id: " + id);
+        }
+        try {
+            // perform soft delete
+            VehicleEntity deletedVehicle = vehicleRepository.findById(id).orElse(null);
+            if (deletedVehicle == null) {
+                throw new ServiceException(ErrorCode.VEHICLE_NOT_FOUND,
+                        "Vehicle not found for deletion with id: " + id);
+            }
+            deletedVehicle.setDeletedAt(LocalDateTime.now());
+            // if(vehicleBusinessLayer.activateOrFutureReservationOfVehicle(id)!=null){
+            // vehicleBusinessLayer.deleteVehicle(id);
+            // }
 
-        vehicleRepository.save(deletedVehicle);
-          return true;
-       }catch (Exception e) {
-           throw new ServiceException(
-                   ErrorCode.INTERNAL_SERVER_ERROR,
-                   "Error occured while deleting a vehicle"
-           );
-       }
+            vehicleRepository.save(deletedVehicle);
+            return true;
+        } catch (Exception e) {
+            throw new ServiceException(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    "Error occured while deleting a vehicle");
+        }
 
     }
 
     @Override
     public VehicleEntity updateVehicle(Long id, UpdateVehicleRequest updateVehicleRequest) {
-        //SecurityBean currentUser = SecurityContext.get();
-
+        // SecurityBean currentUser = SecurityContext.get();
 
         if (!authenticationService.isAdmin()) {
             throw new ServiceException(
                     ErrorCode.UNAUTHORIZED_ACCESS,
-                    "You do not have access to update a vehicle."
-            );
+                    "You do not have access to update a vehicle.");
         }
-//todo if null
+        // todo if null
         VehicleEntity vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(
                         ErrorCode.VEHICLE_NOT_FOUND,
-                        "No vehicle found with id: " + id
-                ));
+                        "No vehicle found with id: " + id));
         vehicle.setModel(updateVehicleRequest.getModel());
         vehicle.setColor(updateVehicleRequest.getColor());
         vehicle.setDailyFee(updateVehicleRequest.getDailyFee());
@@ -181,7 +165,5 @@ public VehicleEntity getVehicleById(Long id) {
         VehicleEntity vehicle = getVehicleById(id);
         return vehicle.getDailyFee();
     }
-
-
 
 }

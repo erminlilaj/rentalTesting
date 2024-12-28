@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -28,11 +27,10 @@ public class ReservationEntity {
     @JoinColumn(name = "vehicle_id")
     private VehicleEntity vehicle;
 
-
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-   @Enumerated(EnumType.STRING)
-   private ReservationStatus status;
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status;
     private LocalDateTime createdAt;
     private double totalPrice;
     private int durationDays;
@@ -42,14 +40,12 @@ public class ReservationEntity {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        updatedAt=LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-
-
 
 }

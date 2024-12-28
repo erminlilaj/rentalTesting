@@ -10,7 +10,6 @@ import it.linksmt.rental.enums.ReservationStatus;
 import it.linksmt.rental.enums.VehicleStatus;
 import it.linksmt.rental.exception.ServiceException;
 import it.linksmt.rental.repository.ReservationRepository;
-import it.linksmt.rental.repository.UserRepository;
 import it.linksmt.rental.repository.projections.ReservationStatisticsProjection;
 import it.linksmt.rental.service.AuthenticationService;
 import it.linksmt.rental.service.ReservationService;
@@ -29,9 +28,9 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final AuthenticationService authenticationService;
 
-
-    public ReservationServiceImpl(ReservationRepository reservationRepository, AuthenticationService authenticationService,
-                                   VehicleServiceImpl vehicleServiceImpl, UserServiceImpl userServiceImpl) {
+    public ReservationServiceImpl(ReservationRepository reservationRepository,
+            AuthenticationService authenticationService,
+            VehicleServiceImpl vehicleServiceImpl, UserServiceImpl userServiceImpl) {
         this.reservationRepository = reservationRepository;
         this.authenticationService = authenticationService;
 
@@ -45,14 +44,17 @@ public class ReservationServiceImpl implements ReservationService {
         VehicleEntity requestedVehicle = vehicleServiceImpl.getVehicleById(reservationRequest.getVehicleId());
 
         if (!checkAvailability(reservationRequest)) {
-            throw new ServiceException(ErrorCode.VEHICLE_NOT_AVAILABLE, "Vehicle is not available for the selected dates");
+            throw new ServiceException(ErrorCode.VEHICLE_NOT_AVAILABLE,
+                    "Vehicle is not available for the selected dates");
         }
-        if(reservationRequest.getStartDate().isBefore(LocalDateTime.now())) {
+        if (reservationRequest.getStartDate().isBefore(LocalDateTime.now())) {
             throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "Start date cannot be before end date");
         }
-        ReservationEntity savedReservation = saveReservationDetails(reservationRequest, requestedVehicle, currentUserId);
+        ReservationEntity savedReservation = saveReservationDetails(reservationRequest, requestedVehicle,
+                currentUserId);
         return convertReservationToResponse(savedReservation);
     }
+
     @Override
     public boolean checkAvailability(CreateReservationRequest reservationRequest) {
         VehicleEntity requestedVehicle = vehicleServiceImpl.getVehicleById(reservationRequest.getVehicleId());
@@ -64,28 +66,28 @@ public class ReservationServiceImpl implements ReservationService {
         boolean isVehicleBusy = reservationRepository.areDatesOverlapping(
                 requestedVehicle.getId(),
                 reservationRequest.getStartDate(),
-                reservationRequest.getEndDate()
-        );
+                reservationRequest.getEndDate());
 
         System.out.println("Is Vehicle Busy (Overlapping): " + isVehicleBusy);
 
         boolean isAvailable = !requestedVehicle.getVehicleStatus().equals(VehicleStatus.MAINTENANCE) && !isVehicleBusy;
 
         System.out.println("Detailed Availability Check:");
-        System.out.println("Vehicle Status Check: " + !requestedVehicle.getVehicleStatus().equals(VehicleStatus.MAINTENANCE));
+        System.out.println(
+                "Vehicle Status Check: " + !requestedVehicle.getVehicleStatus().equals(VehicleStatus.MAINTENANCE));
         System.out.println("Vehicle Busy Check: " + !isVehicleBusy);
         System.out.println("Final Availability: " + isAvailable);
 
         return isAvailable;
     }
 
-
     public ReservationResponse convertReservationToResponse(ReservationEntity savedReservation) {
-        ReservationResponse reservationResponse=new ReservationResponse();
+        ReservationResponse reservationResponse = new ReservationResponse();
         reservationResponse.setReservationId(savedReservation.getId());
         reservationResponse.setUserId(savedReservation.getUser().getId());
         reservationResponse.setVehicleId(savedReservation.getVehicle().getId());
-        reservationResponse.setVehicleName(savedReservation.getVehicle().getBrand()+" "+savedReservation.getVehicle().getModel());
+        reservationResponse.setVehicleName(
+                savedReservation.getVehicle().getBrand() + " " + savedReservation.getVehicle().getModel());
         reservationResponse.setStartDate(savedReservation.getStartDate());
         reservationResponse.setEndDate(savedReservation.getEndDate());
         reservationResponse.setStatus(savedReservation.getStatus().toString());
@@ -95,12 +97,13 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationResponse;
     }
 
-    public ReservationEntity saveReservationDetails(CreateReservationRequest reservationRequest,VehicleEntity vehicleEntity,Long userId) {
-        ReservationEntity reservationEntity=new ReservationEntity();
+    public ReservationEntity saveReservationDetails(CreateReservationRequest reservationRequest,
+            VehicleEntity vehicleEntity, Long userId) {
+        ReservationEntity reservationEntity = new ReservationEntity();
 
-        int durationDays = (int) Duration.between(reservationRequest.getStartDate(), reservationRequest.getEndDate()).toDays();
-        double totalPrice= durationDays* vehicleServiceImpl.getVehiclePrice(vehicleEntity.getId());
-
+        int durationDays = (int) Duration.between(reservationRequest.getStartDate(), reservationRequest.getEndDate())
+                .toDays();
+        double totalPrice = durationDays * vehicleServiceImpl.getVehiclePrice(vehicleEntity.getId());
 
         reservationEntity.setUser(userServiceImpl.getUserById(userId));
         reservationEntity.setVehicle(vehicleEntity);
@@ -117,32 +120,30 @@ public class ReservationServiceImpl implements ReservationService {
     public ReservationResponse getReservationById(Long id) {
 
         ReservationEntity reservationEntity = reservationRepository.findById(id).orElse(null);
-        if(reservationEntity==null) {
+        if (reservationEntity == null) {
             throw new ServiceException(
                     ErrorCode.RESERVATION_NOT_FOUND,
-                    "Reservation not found"
-            );
+                    "Reservation not found");
         }
         return convertReservationToResponse(reservationEntity);
     }
 
     @Override
     public List<ReservationResponse> findAllReservations() {
-        List<ReservationEntity> reservationsList=reservationRepository.findAll();
-        if(reservationsList.isEmpty()){
+        List<ReservationEntity> reservationsList = reservationRepository.findAll();
+        if (reservationsList.isEmpty()) {
             throw new ServiceException(
                     ErrorCode.RESERVATION_NOT_FOUND,
-                    "There is no reservations"
-            );
+                    "There is no reservations");
         }
         return convertReservationListToResponse(reservationsList);
     }
+
     public List<ReservationResponse> convertReservationListToResponse(List<ReservationEntity> reservationList) {
         return reservationList.stream()
                 .map(reservationEntity -> convertReservationToResponse(reservationEntity))
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public ReservationResponse cancelReservation(Long id) {
@@ -150,22 +151,18 @@ public class ReservationServiceImpl implements ReservationService {
         ReservationEntity reservationEntity = reservationRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(
                         ErrorCode.RESERVATION_NOT_FOUND,
-                        "Reservation not found"
-                ));
+                        "Reservation not found"));
         if (isReservationCancelled(id)) {
             throw new ServiceException(
                     ErrorCode.RESERVATION_IS_CANCELLED_OR_ONGOING,
-                    "Reservation is already cancelled"
-            );
+                    "Reservation is already cancelled");
         }
 
         if (isReservationOngoingOrCompleted(id)) {
             throw new ServiceException(
                     ErrorCode.RESERVATION_IS_CANCELLED_OR_ONGOING,
-                    "Cannot cancel an ongoing or completed reservation"
-            );
+                    "Cannot cancel an ongoing or completed reservation");
         }
-
 
         reservationEntity.setStatus(ReservationStatus.CANCELLED);
         ReservationEntity savedReservation = reservationRepository.save(reservationEntity);
@@ -176,8 +173,8 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<ReservationResponse> cancelReservationsOfVehicle(Long vehicleId) {
 
-        List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId, LocalDateTime.now());
-
+        List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId,
+                LocalDateTime.now());
 
         List<ReservationResponse> cancelledReservations = new ArrayList<>();
         for (ReservationEntity reservation : vehiclesReservations) {
@@ -188,20 +185,21 @@ public class ReservationServiceImpl implements ReservationService {
 
         return cancelledReservations;
     }
+
     @Override
     public List<ReservationResponse> listOfActiveOrFutureReservations(Long vehicleId) {
         LocalDateTime currentTime = LocalDateTime.now();
-        List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId, currentTime);
+        List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId,
+                currentTime);
 
         return convertReservationListToResponse(vehiclesReservations);
     }
 
-
-
     public boolean isReservationOngoingOrCompleted(Long id) {
         LocalDateTime currentTime = LocalDateTime.now();
-        return reservationRepository.isReservationOngoingOrCompleted(id,currentTime);
+        return reservationRepository.isReservationOngoingOrCompleted(id, currentTime);
     }
+
     public boolean isReservationCancelled(Long reservationId) {
         ReservationEntity reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "Reservation not found"));
@@ -227,11 +225,12 @@ public class ReservationServiceImpl implements ReservationService {
 
         LocalDateTime currentTime = LocalDateTime.now();
 
-
-        ReservationStatisticsProjection completed = reservationRepository.completedReservationsWithStats(startOfMonth, endOfMonth, currentTime);
-        ReservationStatisticsProjection ongoing = reservationRepository.ongoingReservationsWithStats(startOfMonth, endOfMonth, currentTime);
-        ReservationStatisticsProjection cancelled = reservationRepository.cancelledReservationsWithStats(startOfMonth, endOfMonth);
-
+        ReservationStatisticsProjection completed = reservationRepository.completedReservationsWithStats(startOfMonth,
+                endOfMonth, currentTime);
+        ReservationStatisticsProjection ongoing = reservationRepository.ongoingReservationsWithStats(startOfMonth,
+                endOfMonth, currentTime);
+        ReservationStatisticsProjection cancelled = reservationRepository.cancelledReservationsWithStats(startOfMonth,
+                endOfMonth);
 
         ReservationStatisticsResponse completedResponse = ReservationStatisticsResponse.builder()
                 .month(givenMonth)
@@ -262,14 +261,13 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<ReservationResponse> getReservationListOfUser() {
-        Long userId=authenticationService.getCurrentUserId();
-        List<ReservationEntity> reservationEntityList=reservationRepository.findUsersReservations(userId);
-        List<ReservationResponse> reservationResponseList=convertReservationListToResponse(reservationEntityList);
-        if(reservationResponseList.isEmpty()) {
+        Long userId = authenticationService.getCurrentUserId();
+        List<ReservationEntity> reservationEntityList = reservationRepository.findUsersReservations(userId);
+        List<ReservationResponse> reservationResponseList = convertReservationListToResponse(reservationEntityList);
+        if (reservationResponseList.isEmpty()) {
             return List.of();
         }
         return reservationResponseList;
     }
-
 
 }

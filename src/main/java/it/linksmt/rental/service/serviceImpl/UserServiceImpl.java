@@ -6,11 +6,8 @@ import it.linksmt.rental.entity.UserEntity;
 import it.linksmt.rental.enums.ErrorCode;
 import it.linksmt.rental.exception.ServiceException;
 import it.linksmt.rental.repository.UserRepository;
-import it.linksmt.rental.security.SecurityBean;
-import it.linksmt.rental.security.SecurityContext;
 import it.linksmt.rental.service.AuthenticationService;
 import it.linksmt.rental.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 

@@ -31,23 +31,15 @@ public class VehicleController {
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<?> createVehicle(@RequestBody CreateVehicleRequest createVehicleRequest) {
-        try {
             VehicleEntity createdVehicle = vehicleService.createVehicle(createVehicleRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdVehicle);
-        } catch (ServiceException e) {
-            throw e;
-        }
     }
 
     @GetMapping
     public ResponseEntity<List<VehicleEntity>> getAllVehicles() {
-        try {
             List<VehicleEntity> vehicleList = vehicleService.findAllVehicle();
 
             return ResponseEntity.status(HttpStatus.OK).body(vehicleList);
-        }catch (ServiceException e) {
-            throw e;
-        }
     }
 
 
@@ -63,12 +55,11 @@ public class VehicleController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable Long id) {
-        try{
-     vehicleBusinessLayer.deleteVehicle(id);
+
+            vehicleBusinessLayer.deleteVehicle(id);
+
             return ResponseEntity.status(HttpStatus.OK).build();
-        }catch (ServiceException e) {
-            throw e;
-        }
+
 
     }
 

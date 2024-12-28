@@ -5,7 +5,6 @@ import it.linksmt.rental.dto.UpdateVehicleRequest;
 import it.linksmt.rental.dto.VehicleResponse;
 import it.linksmt.rental.entity.VehicleEntity;
 
-import it.linksmt.rental.exception.ServiceException;
 import it.linksmt.rental.service.VehicleBusinessLayer;
 import it.linksmt.rental.service.VehicleService;
 import jakarta.validation.Valid;
@@ -21,58 +20,53 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/vehicles")
-//@CrossOrigin
+// @CrossOrigin
 public class VehicleController {
 
-    private final VehicleService vehicleService;
+        private final VehicleService vehicleService;
 
-    private final VehicleBusinessLayer vehicleBusinessLayer;
+        private final VehicleBusinessLayer vehicleBusinessLayer;
 
-    //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping
-    public ResponseEntity<?> createVehicle(@RequestBody CreateVehicleRequest createVehicleRequest) {
-            VehicleEntity createdVehicle = vehicleService.createVehicle(createVehicleRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdVehicle);
-    }
+        // @PreAuthorize("hasRole('ROLE_ADMIN')")
+        @PostMapping
+        public ResponseEntity<?> createVehicle(@RequestBody CreateVehicleRequest createVehicleRequest) {
+                VehicleEntity createdVehicle = vehicleService.createVehicle(createVehicleRequest);
+                return ResponseEntity.status(HttpStatus.CREATED).body(createdVehicle);
+        }
 
-    @GetMapping
-    public ResponseEntity<List<VehicleEntity>> getAllVehicles() {
-            List<VehicleEntity> vehicleList = vehicleService.findAllVehicle();
+        @GetMapping
+        public ResponseEntity<List<VehicleEntity>> getAllVehicles() {
+                List<VehicleEntity> vehicleList = vehicleService.findAllVehicle();
 
-            return ResponseEntity.status(HttpStatus.OK).body(vehicleList);
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(vehicleList);
+        }
 
+        @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, path = { "/{id}" })
+        public ResponseEntity<VehicleResponse> getVehicleById(@PathVariable Long id) {
 
-    @GetMapping(produces =MediaType.APPLICATION_JSON_VALUE,path = {"/{id}"})
-    public ResponseEntity<VehicleResponse> getVehicleById(@PathVariable Long id) {
+                VehicleResponse vehicle = vehicleService.findVehicleById(id);
 
-            VehicleResponse vehicle = vehicleService.findVehicleById(id);
+                return ResponseEntity.status(HttpStatus.OK).body(vehicle);
 
-            return ResponseEntity.status(HttpStatus.OK).body(vehicle);
+        }
 
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteVehicle(@PathVariable Long id) {
 
-    }
+                vehicleBusinessLayer.deleteVehicle(id);
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVehicle(@PathVariable Long id) {
+                return ResponseEntity.status(HttpStatus.OK).build();
 
-            vehicleBusinessLayer.deleteVehicle(id);
+        }
 
-            return ResponseEntity.status(HttpStatus.OK).build();
+        @PutMapping("/{id}")
+        public ResponseEntity<VehicleEntity> updateVehicle(@PathVariable Long id,
+                        @Valid @RequestBody UpdateVehicleRequest updateVehicleRequest) {
 
+                VehicleEntity vehicle = vehicleService.updateVehicle(id, updateVehicleRequest);
 
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(vehicle);
 
-    @PutMapping("/{id}")
-    public ResponseEntity<VehicleEntity> updateVehicle(@PathVariable Long id,@Valid @RequestBody UpdateVehicleRequest updateVehicleRequest) {
-
-            VehicleEntity vehicle = vehicleService.updateVehicle(id, updateVehicleRequest);
-
-            return ResponseEntity.status(HttpStatus.OK).body(vehicle);
-
-}
+        }
 
 }
-
-
-

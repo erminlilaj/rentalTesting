@@ -1,13 +1,10 @@
 package it.linksmt.rental.repository;
 
 import it.linksmt.rental.entity.ReservationEntity;
-import it.linksmt.rental.entity.UserEntity;
-import it.linksmt.rental.entity.VehicleEntity;
 import it.linksmt.rental.repository.projections.ReservationStatisticsProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

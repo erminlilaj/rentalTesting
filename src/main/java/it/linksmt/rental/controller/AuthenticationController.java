@@ -1,19 +1,18 @@
 package it.linksmt.rental.controller;
 
-import it.linksmt.rental.dto.CreateUserRequest;
+
 import it.linksmt.rental.dto.LoginUserRequest;
 import it.linksmt.rental.dto.RegisterUserRequest;
 import it.linksmt.rental.entity.UserEntity;
 
-import it.linksmt.rental.exception.ServiceException;
+
 import it.linksmt.rental.service.AuthenticationService;
 import it.linksmt.rental.service.JwtService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 @RequestMapping("/auth")
 @RestController

@@ -117,6 +117,7 @@ public class AuthenticationServiceTest {
         verify(userRepository).save(any(UserEntity.class));
     }
 
+
     @Test
     void testAuthenticate_Success() {
         when(userRepository.findByUsername(loginUserRequest.getUsername())).thenReturn(Optional.of(new UserEntity()));
@@ -129,7 +130,8 @@ public class AuthenticationServiceTest {
 
     @Test
     void testAuthenticate_InvalidCredentials() {
-        doThrow(new BadCredentialsException("Invalid credentials")).when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Invalid credentials"));
 
         ServiceException exception = assertThrows(ServiceException.class, () -> {
             authenticationService.authenticate(loginUserRequest);
@@ -137,6 +139,19 @@ public class AuthenticationServiceTest {
 
         assertEquals(ErrorCode.INVALID_CREDENTIALS, exception.getErrorCode());
         assertEquals("Invalid username or password", exception.getMessage());
+    }
+
+    @Test
+    void testAuthenticate_InternalServerError() {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        ServiceException exception = assertThrows(ServiceException.class, () -> {
+            authenticationService.authenticate(loginUserRequest);
+        });
+
+        assertEquals(ErrorCode.INTERNAL_SERVER_ERROR, exception.getErrorCode());
+        assertEquals("Authentication failed", exception.getMessage());
     }
 
 //    @Test

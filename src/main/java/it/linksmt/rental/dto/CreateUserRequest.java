@@ -26,4 +26,14 @@ public class CreateUserRequest {
     private int age;
 
     private UserType userType = UserType.USER;
+
+    public CreateUserRequest(String username, String name, String surname, String email, String password, int age) {
+        this.username = username;
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
+        this.age = age;
+    }
+
 }

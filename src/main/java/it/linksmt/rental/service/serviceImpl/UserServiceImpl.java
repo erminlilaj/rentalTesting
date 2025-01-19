@@ -27,9 +27,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity createUser(CreateUserRequest createUserRequest) {
-        if(createUserRequest.getAge()<18){
-            throw new ServiceException(ErrorCode.USER_NOT_ELIGIBLE,
-                    "Age must be at least 18");
+        if (createUserRequest.getAge() < 18) {
+            throw new ServiceException(ErrorCode.USER_NOT_ELIGIBLE, "Age must be at least 18");
         }
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(createUserRequest.getUsername());

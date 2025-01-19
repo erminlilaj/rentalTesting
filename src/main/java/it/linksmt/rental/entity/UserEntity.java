@@ -34,6 +34,15 @@ public class UserEntity implements UserDetails {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
+    public UserEntity(Long id,String password, String email, String surname, String name, String username, int age) {
+        this.password = password;
+        this.email = email;
+        this.age = age;
+        this.surname = surname;
+        this.name = name;
+        this.username = username;
+        this.id = id;
+    }
 
     @PrePersist
     private void onCreate() {

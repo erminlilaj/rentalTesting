@@ -14,6 +14,7 @@ public class UpdateUserRequest {
     private String username;
     @NotNull
     private String password;
-    @Min(value = 0, message = "Age cannot be negative")
+    @Min(value = 0, message = "Age " +
+            "cannot be negative")
     private int age;
 }

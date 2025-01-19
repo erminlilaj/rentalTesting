@@ -54,6 +54,10 @@ public class UserServiceImpl implements UserService {
         if (!authenticationService.isAdmin()) {
             throw new AccessDeniedException("Only admins can delete users");
         }
+        if(userRepository.findById(id).isEmpty()){
+            throw new ServiceException(ErrorCode.USER_NOT_FOUND,
+                    "User not found");
+        }
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
             return true;
@@ -64,6 +68,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity getUserById(Long id) {
+        if (userRepository.findById(id).isEmpty()) {
+            throw new ServiceException(ErrorCode.USER_NOT_FOUND,
+                    "User not found");
+        }
         Optional<UserEntity> user = userRepository.findById(id);
         //todo throw exception
         return user.orElse(null);
@@ -75,9 +83,24 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         UserEntity user = getUserById(id);
-        user.setUsername(updateUserRequest.getUsername());
-        user.setPassword(updateUserRequest.getPassword());
-        user.setAge(updateUserRequest.getAge());
+        //update only fields that are not emptyy
+        if(userRepository.existsByUsername(updateUserRequest.getUsername())){
+            throw new ServiceException(ErrorCode.USER_ALREADY_EXISTS,
+                    "Username already exists");
+        }
+        if (updateUserRequest.getUsername() != null) {
+            user.setUsername(updateUserRequest.getUsername());
+        }
+        if (updateUserRequest.getPassword() != null) {
+            user.setPassword(updateUserRequest.getPassword());
+        }
+        if(updateUserRequest.getAge()<18){
+            throw new ServiceException(ErrorCode.USER_NOT_ELIGIBLE,
+                    "Age must be at least 18");
+        }
+            user.setAge(updateUserRequest.getAge());
+
         return userRepository.save(user);
+
     }
 }

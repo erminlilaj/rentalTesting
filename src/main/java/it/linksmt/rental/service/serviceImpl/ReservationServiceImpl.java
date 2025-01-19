@@ -29,8 +29,8 @@ public class ReservationServiceImpl implements ReservationService {
     private final AuthenticationService authenticationService;
 
     public ReservationServiceImpl(ReservationRepository reservationRepository,
-            AuthenticationService authenticationService,
-            VehicleServiceImpl vehicleServiceImpl, UserServiceImpl userServiceImpl) {
+                                  AuthenticationService authenticationService,
+                                  VehicleServiceImpl vehicleServiceImpl, UserServiceImpl userServiceImpl) {
         this.reservationRepository = reservationRepository;
         this.authenticationService = authenticationService;
 
@@ -42,14 +42,20 @@ public class ReservationServiceImpl implements ReservationService {
     public ReservationResponse createReservation(CreateReservationRequest reservationRequest) {
         Long currentUserId = authenticationService.getCurrentUserId();
         VehicleEntity requestedVehicle = vehicleServiceImpl.getVehicleById(reservationRequest.getVehicleId());
-
+if(requestedVehicle == null){
+            throw new ServiceException(ErrorCode.VEHICLE_NOT_FOUND, "Vehicle not found");
+        }
+        if (reservationRequest.getStartDate().isBefore(LocalDateTime.now())) {
+            throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "Start date cannot be before current date");
+        }
+        if (reservationRequest.getEndDate().isBefore(reservationRequest.getStartDate())) {
+            throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "End date cannot be before start date");
+        }
         if (!checkAvailability(reservationRequest)) {
             throw new ServiceException(ErrorCode.VEHICLE_NOT_AVAILABLE,
                     "Vehicle is not available for the selected dates");
         }
-        if (reservationRequest.getStartDate().isBefore(LocalDateTime.now())) {
-            throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "Start date cannot be before end date");
-        }
+
         ReservationEntity savedReservation = saveReservationDetails(reservationRequest, requestedVehicle,
                 currentUserId);
         return convertReservationToResponse(savedReservation);
@@ -119,6 +125,9 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public ReservationResponse getReservationById(Long id) {
 
+        if(reservationRepository.findById(id).isEmpty()){
+            throw new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "Reservation not found");
+        }
         ReservationEntity reservationEntity = reservationRepository.findById(id).orElse(null);
         if (reservationEntity == null) {
             throw new ServiceException(
@@ -175,7 +184,9 @@ public class ReservationServiceImpl implements ReservationService {
 
         List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId,
                 LocalDateTime.now());
-
+if(vehiclesReservations.isEmpty()){
+            throw new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "There are no reservations for this vehicle with id: " + vehicleId);
+}
         List<ReservationResponse> cancelledReservations = new ArrayList<>();
         for (ReservationEntity reservation : vehiclesReservations) {
             reservation.setStatus(ReservationStatus.CANCELLED);
@@ -188,14 +199,23 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<ReservationResponse> listOfActiveOrFutureReservations(Long vehicleId) {
+        if(vehicleServiceImpl.getVehicleById(vehicleId) == null){
+            throw new ServiceException(ErrorCode.VEHICLE_NOT_FOUND, "Vehicle not found");
+        }
+
         LocalDateTime currentTime = LocalDateTime.now();
         List<ReservationEntity> vehiclesReservations = reservationRepository.listOfActiveOrFutureReservations(vehicleId,
                 currentTime);
-
+       if(vehiclesReservations.isEmpty()){
+            throw new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "There are no reservations for this vehicle with id: " + vehicleId);
+        }
         return convertReservationListToResponse(vehiclesReservations);
     }
 
     public boolean isReservationOngoingOrCompleted(Long id) {
+        if(reservationRepository.findById(id).isEmpty()){
+            throw new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "Reservation not found");
+        }
         LocalDateTime currentTime = LocalDateTime.now();
         return reservationRepository.isReservationOngoingOrCompleted(id, currentTime);
     }

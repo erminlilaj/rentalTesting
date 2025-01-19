@@ -5,7 +5,7 @@ import it.linksmt.rental.dto.UpdateVehicleRequest;
 import it.linksmt.rental.dto.VehicleResponse;
 import it.linksmt.rental.entity.VehicleEntity;
 import it.linksmt.rental.enums.ErrorCode;
-
+import it.linksmt.rental.enums.VehicleStatus;
 import it.linksmt.rental.exception.ServiceException;
 import it.linksmt.rental.repository.VehicleRepository;
 import it.linksmt.rental.service.AuthenticationService;
@@ -89,7 +89,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     public VehicleEntity getVehicleById(Long id) {
         return vehicleRepository.findById(id).orElseThrow(() -> new ServiceException(
-                ErrorCode.VEHICLE_NOT_FOUND));
+                ErrorCode.VEHICLE_NOT_FOUND,"No vehicle found with id: " + id));
     }
 
     private VehicleResponse convertVehicleToResponse(VehicleEntity vehicleEntity) {
@@ -156,9 +156,25 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new ServiceException(
                         ErrorCode.VEHICLE_NOT_FOUND,
                         "No vehicle found with id: " + id));
+        if (updateVehicleRequest.getModel() == null && updateVehicleRequest.getColor() == null && updateVehicleRequest.getDailyFee() == null && updateVehicleRequest.getVehicleStatus() == null) {
+            throw new ServiceException(
+                    ErrorCode.BAD_VEHICLE_DETAILS,
+                    "Fields cannot be empty");
+        }
+        if(updateVehicleRequest.getVehicleStatus()!= VehicleStatus.AVAILABLE||updateVehicleRequest.getVehicleStatus()!= VehicleStatus.MAINTENANCE){
+            throw new ServiceException(
+                    ErrorCode.BAD_VEHICLE_DETAILS,
+                    "Vehicle status must be either AVAILABLE or MAINTENANCE");
+        }
+        if(updateVehicleRequest.getDailyFee()<=0){
+            throw new ServiceException(
+                    ErrorCode.BAD_VEHICLE_DETAILS,
+                    "Daily fee must be greater than 0");
+        }
         vehicle.setModel(updateVehicleRequest.getModel());
         vehicle.setColor(updateVehicleRequest.getColor());
         vehicle.setDailyFee(updateVehicleRequest.getDailyFee());
+
         vehicle.setVehicleStatus(updateVehicleRequest.getVehicleStatus());
         return vehicleRepository.save(vehicle);
     }

@@ -161,7 +161,7 @@ public class VehicleServiceImpl implements VehicleService {
                     ErrorCode.BAD_VEHICLE_DETAILS,
                     "Fields cannot be empty");
         }
-        if(updateVehicleRequest.getVehicleStatus()!= VehicleStatus.AVAILABLE||updateVehicleRequest.getVehicleStatus()!= VehicleStatus.MAINTENANCE){
+        if(updateVehicleRequest.getVehicleStatus()!= VehicleStatus.AVAILABLE&&updateVehicleRequest.getVehicleStatus()!= VehicleStatus.MAINTENANCE){
             throw new ServiceException(
                     ErrorCode.BAD_VEHICLE_DETAILS,
                     "Vehicle status must be either AVAILABLE or MAINTENANCE");

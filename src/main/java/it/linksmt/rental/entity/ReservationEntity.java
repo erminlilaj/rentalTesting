@@ -37,7 +37,7 @@ public class ReservationEntity {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public ReservationEntity(long id, VehicleEntity vehicle, UserEntity user, LocalDateTime startDate, LocalDateTime endDate, ReservationStatus status, int duration, double price) {
+    public ReservationEntity(Long id, VehicleEntity vehicle, UserEntity user, LocalDateTime startDate, LocalDateTime endDate, ReservationStatus status, int duration, double price) {
         this.id = id;
         this.vehicle = vehicle;
         this.user = user;

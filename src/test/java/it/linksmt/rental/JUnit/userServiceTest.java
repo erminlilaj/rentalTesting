@@ -1,4 +1,4 @@
-package it.linksmt.rental;
+package it.linksmt.rental.JUnit;
 
 import it.linksmt.rental.dto.CreateUserRequest;
 import it.linksmt.rental.dto.UpdateUserRequest;

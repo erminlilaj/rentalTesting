@@ -1,4 +1,4 @@
-package it.linksmt.rental;
+package it.linksmt.rental.JUnit;
 
 import it.linksmt.rental.dto.CreateVehicleRequest;
 import it.linksmt.rental.dto.UpdateVehicleRequest;

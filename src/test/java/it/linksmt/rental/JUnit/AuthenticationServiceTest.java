@@ -1,4 +1,4 @@
-package it.linksmt.rental;
+package it.linksmt.rental.JUnit;
 import org.mockito.MockedStatic;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

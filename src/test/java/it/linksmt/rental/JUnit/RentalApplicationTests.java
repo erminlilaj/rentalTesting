@@ -1,4 +1,4 @@
-package it.linksmt.rental;
+package it.linksmt.rental.JUnit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

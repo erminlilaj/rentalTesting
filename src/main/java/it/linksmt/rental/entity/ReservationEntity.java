@@ -37,6 +37,18 @@ public class ReservationEntity {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
+    public ReservationEntity(long id, VehicleEntity vehicle, UserEntity user, LocalDateTime startDate, LocalDateTime endDate, ReservationStatus status, int duration, double price) {
+        this.id = id;
+        this.vehicle = vehicle;
+        this.user = user;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.durationDays = duration;
+        this.totalPrice = price;
+    }
+
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

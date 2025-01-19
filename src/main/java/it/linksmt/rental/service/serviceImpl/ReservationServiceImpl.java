@@ -88,6 +88,10 @@ if(requestedVehicle == null){
     }
 
     public ReservationResponse convertReservationToResponse(ReservationEntity savedReservation) {
+        if (savedReservation.getUser() == null || savedReservation.getVehicle() == null) {
+            throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "Reservation is missing essential details");
+        }
+
         ReservationResponse reservationResponse = new ReservationResponse();
         reservationResponse.setReservationId(savedReservation.getId());
         reservationResponse.setUserId(savedReservation.getUser().getId());
@@ -102,6 +106,7 @@ if(requestedVehicle == null){
 
         return reservationResponse;
     }
+
 
     public ReservationEntity saveReservationDetails(CreateReservationRequest reservationRequest,
             VehicleEntity vehicleEntity, Long userId) {
@@ -223,9 +228,15 @@ if(vehiclesReservations.isEmpty()){
     public boolean isReservationCancelled(Long reservationId) {
         ReservationEntity reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.RESERVATION_NOT_FOUND, "Reservation not found"));
-        return reservation.getStatus().equals(ReservationStatus.CANCELLED);
 
+        if (reservation.getStatus() == null) {
+            throw new ServiceException(ErrorCode.BAD_RESERVATION_DETAILS, "Reservation status is null");
+        }
+
+        return reservation.getStatus().equals(ReservationStatus.CANCELLED);
     }
+
+
 
     @Override
     public List<ReservationStatisticsResponse> getReservationStatistics(String givenDate) {

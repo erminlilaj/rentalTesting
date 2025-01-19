@@ -39,7 +39,12 @@ public class VehicleEntity {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-
+    public VehicleEntity(Long id, String brand, String model, VehicleStatus vehicleStatus) {
+        this.id = id;
+        this.brand = brand;
+        this.model = model;
+        this.vehicleStatus = vehicleStatus;
+    }
 
 
     @PrePersist

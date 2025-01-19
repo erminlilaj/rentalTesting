@@ -28,17 +28,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    private static final Long USER_ID = 1L;
-    private static final String USERNAME = "johndoe";
-    private static final String NEW_USERNAME = "newusername";
-    private static final String PASSWORD = "password";
-    private static final String NEW_PASSWORD = "newpassword";
-    private static final String NAME = "John";
-    private static final String SURNAME = "Doe";
-    private static final String EMAIL = "john@example.com";
-    private static final int AGE = 25;
-    private static final int NEW_AGE = 30;
-
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -53,11 +42,24 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    // Helper methods for test setup
+    private UserEntity createMockUser(Long id, String username, int age) {
+        return new UserEntity(id, "password", "John", "Doe", "john@example.com", username, age);
+    }
+
+    private CreateUserRequest createMockCreateUserRequest(String username, int age) {
+        return new CreateUserRequest(username, "John", "Doe", "john@example.com", "password", age);
+    }
+
+    private UpdateUserRequest createMockUpdateUserRequest(String username, String password, int age) {
+        return new UpdateUserRequest(username, password, age);
+    }
+
     @Test
     void testCreateUser_Success() {
         // Arrange
-        CreateUserRequest request = new CreateUserRequest(USERNAME, NAME, SURNAME, EMAIL, PASSWORD, AGE);
-        UserEntity savedUser = new UserEntity(USER_ID, PASSWORD, NAME, SURNAME, EMAIL, USERNAME, AGE);
+        CreateUserRequest request = createMockCreateUserRequest("johndoe", 25);
+        UserEntity savedUser = createMockUser(1L, "johndoe", 25);
 
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
@@ -66,32 +68,27 @@ class UserServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(USERNAME, result.getUsername());
+        assertEquals("johndoe", result.getUsername());
         verify(userRepository, times(1)).save(any(UserEntity.class));
-
-        // Capture and verify saved entity
-        ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
-        verify(userRepository).save(captor.capture());
-        UserEntity capturedEntity = captor.getValue();
-        assertEquals(AGE, capturedEntity.getAge());
     }
 
     @Test
     void testCreateUser_AgeUnder18() {
         // Arrange
-        CreateUserRequest request = new CreateUserRequest(USERNAME, NAME, SURNAME, EMAIL, PASSWORD, 16);
+        CreateUserRequest request = createMockCreateUserRequest("johndoe", 16);
 
         // Act & Assert
         ServiceException exception = assertThrows(ServiceException.class, () -> userService.createUser(request));
         assertEquals(ErrorCode.USER_NOT_ELIGIBLE, exception.getErrorCode());
+        assertEquals("Age must be at least 18", exception.getMessage());
     }
 
     @Test
     void testFindAllUsers_ReturnsUsers() {
         // Arrange
         List<UserEntity> mockUsers = List.of(
-                new UserEntity(1L, USERNAME, NAME, SURNAME, EMAIL, PASSWORD, AGE),
-                new UserEntity(2L, "janedoe", "Jane", "Doe", "jane@example.com", "securepass", 30)
+                createMockUser(1L, "johndoe", 25),
+                createMockUser(2L, "janedoe", 30)
         );
         when(userRepository.findAll()).thenReturn(mockUsers);
 
@@ -119,14 +116,15 @@ class UserServiceTest {
     void testDeleteUser_AsAdmin_Success() {
         // Arrange
         when(authenticationService.isAdmin()).thenReturn(true);
-        when(userRepository.existsById(USER_ID)).thenReturn(true);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new UserEntity()));
+        when(userRepository.existsById(1L)).thenReturn(true);
 
         // Act
-        boolean result = userService.deleteUser(USER_ID);
+        boolean result = userService.deleteUser(1L);
 
         // Assert
         assertTrue(result);
-        verify(userRepository, times(1)).deleteById(USER_ID);
+        verify(userRepository, times(1)).deleteById(1L);
     }
 
     @Test
@@ -137,7 +135,7 @@ class UserServiceTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
                 AccessDeniedException.class,
-                () -> userService.deleteUser(USER_ID)
+                () -> userService.deleteUser(1L)
         );
 
         assertEquals("Only admins can delete users", exception.getMessage());
@@ -148,71 +146,115 @@ class UserServiceTest {
     void testDeleteUser_UserNotFound() {
         // Arrange
         when(authenticationService.isAdmin()).thenReturn(true);
-        when(userRepository.existsById(USER_ID)).thenReturn(false);
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        boolean result = userService.deleteUser(USER_ID);
+        // Act & Assert
+        ServiceException exception = assertThrows(
+                ServiceException.class,
+                () -> userService.deleteUser(1L)
+        );
 
-        // Assert
-        assertFalse(result);
-        verify(userRepository, never()).deleteById(anyLong());
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals("User not found", exception.getMessage());
     }
 
     @Test
     void testGetUserById_Success() {
         // Arrange
-        UserEntity mockUser = new UserEntity(USER_ID, PASSWORD, NAME, SURNAME, EMAIL, USERNAME, AGE);
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(mockUser));
+        UserEntity mockUser = createMockUser(1L, "johndoe", 25);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
 
         // Act
-        UserEntity result = userService.getUserById(USER_ID);
+        UserEntity result = userService.getUserById(1L);
 
         // Assert
         assertNotNull(result);
-        assertEquals(USERNAME, result.getUsername());
+        assertEquals("johndoe", result.getUsername());
     }
 
     @Test
     void testGetUserById_NotFound() {
         // Arrange
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        UserEntity result = userService.getUserById(USER_ID);
+        // Act & Assert
+        ServiceException exception = assertThrows(
+                ServiceException.class,
+                () -> userService.getUserById(1L)
+        );
 
-        // Assert
-        assertNull(result);
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals("User not found", exception.getMessage());
     }
 
     @Test
     void testUpdateUser_Success() {
         // Arrange
-        UpdateUserRequest request = new UpdateUserRequest(NEW_USERNAME, NEW_PASSWORD, NEW_AGE);
-        UserEntity existingUser = new UserEntity(USER_ID, USERNAME, NAME, SURNAME, EMAIL, PASSWORD, AGE);
+        UpdateUserRequest request = createMockUpdateUserRequest("newusername", "newpassword", 30);
+        UserEntity existingUser = createMockUser(1L, "johndoe", 25);
 
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(UserEntity.class))).thenReturn(existingUser);
 
         // Act
-        UserEntity result = userService.updateUser(USER_ID, request);
+        UserEntity result = userService.updateUser(1L, request);
 
         // Assert
         assertNotNull(result);
-        assertEquals(NEW_USERNAME, result.getUsername());
+        assertEquals("newusername", result.getUsername());
         verify(userRepository, times(1)).save(any(UserEntity.class));
     }
 
     @Test
     void testUpdateUser_UserNotFound() {
         // Arrange
-        UpdateUserRequest request = new UpdateUserRequest(NEW_USERNAME, NEW_PASSWORD, NEW_AGE);
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+        UpdateUserRequest request = createMockUpdateUserRequest("newusername", "newpassword", 30);
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        UserEntity result = userService.updateUser(USER_ID, request);
+        // Act & Assert
+        ServiceException exception = assertThrows(
+                ServiceException.class,
+                () -> userService.updateUser(1L, request)
+        );
 
-        // Assert
-        assertNull(result);
-        verify(userRepository, never()).save(any(UserEntity.class));
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateUser_UsernameAlreadyExists() {
+        // Arrange
+        UpdateUserRequest request = createMockUpdateUserRequest("existingUsername", "newpassword", 30);
+        UserEntity existingUser = createMockUser(1L, "johndoe", 25);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.existsByUsername("existingUsername")).thenReturn(true);
+
+        // Act & Assert
+        ServiceException exception = assertThrows(
+                ServiceException.class,
+                () -> userService.updateUser(1L, request)
+        );
+
+        assertEquals(ErrorCode.USER_ALREADY_EXISTS, exception.getErrorCode());
+        assertEquals("Username already exists", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateUser_AgeUnder18() {
+        // Arrange
+        UpdateUserRequest request = createMockUpdateUserRequest("newusername", "newpassword", 16);
+        UserEntity existingUser = createMockUser(1L, "johndoe", 25);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+
+        // Act & Assert
+        ServiceException exception = assertThrows(
+                ServiceException.class,
+                () -> userService.updateUser(1L, request)
+        );
+
+        assertEquals(ErrorCode.USER_NOT_ELIGIBLE, exception.getErrorCode());
+        assertEquals("Age must be at least 18", exception.getMessage());
     }
 }

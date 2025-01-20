@@ -22,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -34,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class UserControllerDbTest {
 
     @Autowired
@@ -57,14 +59,15 @@ public class UserControllerDbTest {
     private String adminToken;
 
     @BeforeEach
+    @Transactional
     void setUp() {
-        userRepository.deleteAll();
+       // userRepository.deleteAll();
 
         // Create and save an admin user
         UserEntity adminUser = new UserEntity(
                 null,
                 "admin",
-                "Admin",
+                "Adminnnnn",
                 "User",
                 "admin@example.com",
                 "$2a$10$3tSIPUuEo8lmzjBnfRZZvubO/lsr6loVy6S6LRZU0bXKo1p/X04am",
@@ -142,10 +145,10 @@ public class UserControllerDbTest {
     void getAllUsersTest() throws Exception {
         userRepository.save(new UserEntity(
                 null,
-                "user1",
+                "user1t",
                 "Test",
                 "User",
-                "user1@example.com",
+                "user1t@example.com",
                 "password",
                 30,
                 UserType.USER,
@@ -155,10 +158,10 @@ public class UserControllerDbTest {
         ));
         userRepository.save(new UserEntity(
                 null,
-                "user2",
+                "user2t",
                 "Test",
                 "User",
-                "user2@example.com",
+                "user2t@example.com",
                 "password",
                 30,
                 UserType.USER,

@@ -22,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class VehicleControllerTest {
 
     @Autowired
@@ -83,7 +85,7 @@ public class VehicleControllerTest {
                 LocalDateTime.now(),
                 null
         );
-
+userRepository.save(adminUser);
         // Mock the behavior of authenticationService.isAdmin()
         when(authenticationService.isAdmin()).thenReturn(true);
 

@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class ReservationControllerIntegrationTest {
 
     @Autowired
@@ -60,17 +62,18 @@ public class ReservationControllerIntegrationTest {
     private UserEntity savedUser;
 
     @BeforeEach
+
     void setUp() {
-        reservationRepository.deleteAll();
-        vehicleRepository.deleteAll();
-        userRepository.deleteAll();
+//        reservationRepository.deleteAll();
+//        vehicleRepository.deleteAll();
+//        userRepository.deleteAll();
 
         UserEntity admin = new UserEntity(
-                null, "admin", "Admin", "User", "admin@example.com", "adminpassword", 50,
+                null, "admin1", "Admin", "User", "adminn@example.com", "adminpassword", 50,
                 UserType.ADMIN, LocalDateTime.now(), LocalDateTime.now(), null
         );
         savedUser = new UserEntity(
-                null, "user2", "Test", "User", "user2@example.com", "password", 30,
+                null, "usertest", "Test", "User", "usertest@example.com", "password", 30,
                 UserType.USER, LocalDateTime.now(), LocalDateTime.now(), null
         );
         userRepository.saveAll(List.of(admin, savedUser));

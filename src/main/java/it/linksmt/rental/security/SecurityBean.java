@@ -16,4 +16,11 @@ public class SecurityBean {
 
     private Collection<? extends GrantedAuthority> authorities;
 
+    public SecurityBean(Collection<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    public Object getCurrentUser() {
+        return SecurityContext.get();
+    }
 }

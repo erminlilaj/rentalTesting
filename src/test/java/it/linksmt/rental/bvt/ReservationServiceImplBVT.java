@@ -73,5 +73,20 @@ class VehicleServiceImplBoundaryTest {
         ServiceException exception = assertThrows(ServiceException.class, () -> vehicleService.createVehicle(year, dailyFee));
         assertEquals("The year must be between 1980 and currentYear", exception.getMessage());
     }
+
+    @Test
+    void minimumValidFee_createsVehicleSuccessfully() {
+        // Arrange
+        int year = 1990; // Valid year
+        double dailyFee = 0.01; // Minimum valid daily fee
+
+        VehicleEntity vehicle = new VehicleEntity();
+        vehicle.setYear(year);
+        vehicle.setDailyFee(dailyFee);
+
+        // Act & Assert
+        assertDoesNotThrow(() -> vehicleService.createVehicle(year, dailyFee));
+    }
+
 }
 

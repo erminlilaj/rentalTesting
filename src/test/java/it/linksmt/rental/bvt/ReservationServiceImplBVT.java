@@ -75,18 +75,26 @@ class VehicleServiceImplBoundaryTest {
     }
 
     @Test
-    void minimumValidFee_createsVehicleSuccessfully() {
+    void invalidFee_zero_throwsException() {
         // Arrange
         int year = 1990; // Valid year
-        double dailyFee = 0.01; // Minimum valid daily fee
-
-        VehicleEntity vehicle = new VehicleEntity();
-        vehicle.setYear(year);
-        vehicle.setDailyFee(dailyFee);
+        double dailyFee = 0.0; // Invalid daily fee
 
         // Act & Assert
-        assertDoesNotThrow(() -> vehicleService.createVehicle(year, dailyFee));
+        ServiceException exception = assertThrows(ServiceException.class, () -> vehicleService.createVehicle(year, dailyFee));
+        assertEquals("The daily fee must be greater than 0", exception.getMessage());
     }
 
+    @Test
+    void invalidFee_negative_throwsException() {
+        // Arrange
+        int year = 1990; // Valid year
+        double dailyFee = -5.0; // Invalid daily fee
+
+        // Act & Assert
+        ServiceException exception = assertThrows(ServiceException.class, () -> vehicleService.createVehicle(year, dailyFee));
+        assertEquals("The daily fee must be greater than 0", exception.getMessage());
+    }
 }
+
 
